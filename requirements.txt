@@ -1,0 +1,8 @@
+Flask>=3.0,<4.0
+opencv-python-headless>=4.8
+ultralytics>=8.2
+supervision>=0.22
+numpy>=1.24
+pandas>=2.0
+reportlab>=4.0
+waitress>=3.0

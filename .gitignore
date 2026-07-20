@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+logs/*.log
+
+# Session runtime
+sessions/
+
+# Uploaded files
+uploads/*
+!uploads/.gitkeep
+
+# Screenshots
+screenshots/*
+!screenshots/.gitkeep
+
+# Reports
+exports/*
+!exports/.gitkeep
+
+# Database
+data/*.db
+
+# OS
+.DS_Store
+Thumbs.db

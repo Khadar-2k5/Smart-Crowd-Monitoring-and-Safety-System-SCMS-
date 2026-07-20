@@ -1,0 +1,1018 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="app-shell" id="appShell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <a class="brand" href="/" aria-label="SmartCrowd home">
+        <span class="brand-icon"><i class="fa-solid fa-shield-halved"></i></span>
+        <span class="brand-copy"><b>SCMS</b><small>Safety operations</small></span>
+      </a>
+      <button id="collapseSidebar" class="sidebar-collapse" type="button" aria-label="Collapse sidebar"><i class="fa-solid fa-angles-left"></i></button>
+    </div>
+    <nav class="main-nav" aria-label="Primary navigation">
+
+      <a href="/" data-page="home"><i class="fas fa-home"></i><span>Overview</span></a>
+      <a href="/monitoring" data-page="monitoring"><i class="fa-solid fa-video"></i><span>Monitoring</span></a>
+      <a href="/analytics" data-page="analytics"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></a>
+      <a href="/reports" data-page="reports"><i class="fas fa-file-alt"></i><span>Reports</span></a>
+      <a href="/logs" data-page="logs"><i class="fa-solid fa-list-check"></i><span>Event logs</span></a>
+      <a href="/settings" data-page="settings"><i class="fa-solid fa-sliders"></i><span>Settings</span></a>
+      <a href="/about" data-page="about"><i class="fa-solid fa-circle-info"></i><span>About</span></a>
+      <a href="/help" data-page="help"><i class="fa-solid fa-circle-question"></i><span>Help</span>
+</a>
+    </nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span class="brand-copy"><small>Protection engine</small><b id="sidebarStatus">Ready</b></span></div>
+  </aside>
+
+  <main class="content-area">
+    <header class="topbar">
+      <div class="topbar-title"><button class="icon-button mobile-menu" id="mobileMenu" type="button" aria-label="Open navigation"><i class="fa-solid fa-bars"></i></button><div><p class="eyebrow" id="pageEyebrow">SAFETY OPERATIONS</p><h1 id="pageTitle">Command center</h1></div></div>
+      <div class="top-actions"><span class="system-chip" id="systemChip"><i class="fa-solid fa-circle"></i><span>System ready</span></span><button class="icon-button" id="themeToggle" type="button" aria-label="Toggle color theme"><i class="fa-solid fa-moon"></i></button></div>
+    </header>
+
+    <section class="page active" id="homePage">
+      <div class="hero-card">
+        <div class="hero-content"><span class="tag"><i class="fa-solid fa-wand-magic-sparkles"></i> AI safety intelligence</span><h2>Calm, informed crowd operations from one command center.</h2><p>Connect a live camera or uploaded video to track people, monitor capacity, preserve incident evidence, and understand changing conditions in real time.</p><div class="hero-actions"><button class="btn btn-primary" data-go="monitoring" type="button"><i class="fa-solid fa-play"></i> Start monitoring</button><button class="btn btn-ghost-light" data-go="analytics" type="button">View analytics</button></div></div>
+        <div class="hero-visual" aria-hidden="true"><span class="orbit orbit-one"></span><span class="orbit orbit-two"></span><i class="fa-solid fa-people-group"></i><b>LIVE<br>SAFETY</b></div>
+      </div>
+
+      <div class="metric-grid metric-grid-six">
+        <article class="metric-card"><span class="metric-icon violet"><i class="fa-solid fa-video"></i></span><div><small>Active cameras</small><strong id="homeCameras">0</strong><em>Sources online</em></div></article>
+        <article class="metric-card"><span class="metric-icon green"><i class="fa-solid fa-users"></i></span><div><small>Current occupancy</small><strong id="homeOccupancy">0</strong><em>People in view</em></div></article>
+        <article class="metric-card"><span class="metric-icon blue"><i class="fa-solid fa-chart-simple"></i></span><div><small>Average occupancy</small><strong id="homeAverage">0</strong><em>Sampled activity</em></div></article>
+        <article class="metric-card"><span class="metric-icon violet"><i class="fa-solid fa-mountain-sun"></i></span><div><small>Peak occupancy</small><strong id="homePeak">0</strong><em>Observed maximum</em></div></article>
+        <article class="metric-card"><span class="metric-icon amber"><i class="fa-solid fa-bell"></i></span><div><small>Safety alerts</small><strong id="homeAlerts">0</strong><em>Recorded incidents</em></div></article>
+        <article class="metric-card"><span class="metric-icon teal"><i class="fa-solid fa-heart-pulse"></i></span><div><small>Platform health</small><strong id="homeHealth">Ready</strong><em>Services verified</em></div></article>
+      </div>
+
+      <div class="overview-grid">
+        <article class="panel"><div class="panel-heading"><div><h3>Quick start</h3><p>Choose a secure video source to create a workspace.</p></div></div><div class="quick-actions"><button class="quick-action" data-quick-source="webcam" type="button"><i class="fa-solid fa-video"></i><span><b>Local webcam</b><small>Use a connected device</small></span><i class="fa-solid fa-arrow-right"></i></button><button class="quick-action" data-quick-source="rtsp" type="button"><i class="fa-solid fa-tower-broadcast"></i><span><b>RTSP / IP camera</b><small>Connect a managed network stream</small></span><i class="fa-solid fa-arrow-right"></i></button><button class="quick-action" data-quick-source="video" type="button"><i class="fa-solid fa-file-video"></i><span><b>Video analysis</b><small>Upload a recorded clip</small></span><i class="fa-solid fa-arrow-right"></i></button></div></article>
+        <article class="panel"><div class="panel-heading"><div><h3>Operational activity</h3><p>Latest automatic system events.</p></div><button class="text-button" data-go="logs" type="button">Open log</button></div><div id="homeActivity" class="activity-list empty-state">No events have been recorded yet.</div></article>
+        <article class="panel system-panel"><div class="panel-heading"><div><h3>Platform readiness</h3><p>Core safety services at a glance.</p></div><button id="recheckHealth" class="text-button" type="button">Recheck</button></div><div id="healthSummary" class="health-summary"></div></article>
+      </div>
+    </section>
+
+    <section class="page" id="monitoringPage">
+      <article class="panel source-panel">
+        <div class="panel-heading"><div><h3>Connect a camera source</h3><p>Start a live workspace; every source retains independent tracking state.</p></div><span class="secure-label"><i class="fa-solid fa-shield-halved"></i>Secure AI</span></div>
+        <div class="source-config">
+          <div class="field"><label for="sourceType">Input type</label><select id="sourceType" class="form-select"><option value="webcam">Webcam</option><option value="usb">USB camera</option><option value="rtsp">RTSP stream</option><option value="ip">IP / HTTP camera</option><option value="video">Uploaded video</option></select></div>
+          <div class="field grow"><label for="cameraSource" class="d-flex align-items-center justify-content-between"><span>Camera Source</span><button id="cameraSourceHelp" class="btn btn-sm btn-outline-info rounded-circle" type="button" title="Camera Source Guide"><i class="fa-solid fa-circle-info"></i></button></label>
+    <select id="webcamDeviceSelect" class="form-select d-none" aria-describedby="sourceHint"><option value="">Detecting cameras...</option></select><input id="cameraSource" class="form-control" value="0" placeholder="0, rtsp://... or uploaded filename"><small id="sourceHint">Local webcam index, usually 0.</small></div>
+          <div class="field"><label for="cameraName">Display name</label><input id="cameraName" class="form-control" maxlength="80" placeholder="Optional name"></div>
+          <div class="field action-field"><label>&nbsp;</label><button class="btn btn-primary" id="startCamera" type="button"><i class="fa-solid fa-play"></i> Proceed</button></div>
+        </div>
+        <div class="upload-strip d-none" id="uploadStrip"><input type="file" id="videoUpload" accept="video/mp4,video/x-msvideo,video/quicktime,video/x-matroska,video/webm" hidden><button class="btn btn-outline-secondary" id="uploadVideo" type="button"><i class="fa-solid fa-upload"></i> Upload video</button><span id="uploadStatus">No video selected</span></div>
+      </article>
+
+      <article class="panel camera-workspace"><div class="panel-heading"><div><h3>Camera workspace</h3><p>Select a source without interrupting other active streams.</p></div><button class="text-button" id="refreshCameras" type="button"><i class="fa-solid fa-rotate"></i> Refresh</button></div><div id="cameraList" class="camera-list empty-state">No camera is connected.</div></article>
+      <div id="alertBanner" class="alert-banner d-none" role="alert"><i class="fa-solid fa-bell"></i><span id="alertMessage">Capacity alert</span><button id="dismissAlert" type="button" aria-label="Dismiss alert"><i class="fa-solid fa-xmark"></i></button></div>
+
+      <div class="metric-grid monitor-metrics">
+        <article class="metric-card"><span class="metric-icon green"><i class="fa-solid fa-users"></i></span><div><small>Current occupancy</small><strong id="occupancyValue">0</strong><em id="densityValue">Low density</em></div></article>
+        <article class="metric-card"><span class="metric-icon blue"><i class="fa-solid fa-fingerprint"></i></span><div><small>Tracked people</small><strong id="trackingValue">0</strong><em>Persistent ByteTrack IDs</em></div></article>
+        <article class="metric-card"><span class="metric-icon violet"><i class="fa-solid fa-gauge-high"></i></span><div><small>Processing FPS</small><strong id="fpsValue">0.0</strong><em id="runtimeValue">00:00:00 runtime</em></div></article>
+        <article class="metric-card"><span class="metric-icon amber"><i class="fa-solid fa-right-left"></i></span><div><small>Crossing count</small><strong id="lineValue">0 / 0</strong><em>IN / OUT</em></div></article>
+      </div>
+
+      <div class="live-grid">
+        <article class="video-panel"><div class="video-head"><div><span class="live-dot"></span><b id="currentCameraLabel">No active camera</b><small id="cameraDetail">Connect a source to start AI analysis.</small></div><div class="video-switch"><button class="video-mode active" data-mode="live" type="button">Live</button><button class="video-mode" data-mode="heatmap" type="button">Heatmap</button></div></div><div class="video-stage" id="videoStage"><img id="videoFeed" alt="Live camera stream"><div id="videoEmpty"><i class="fa-solid fa-video-slash"></i><span>Live feed will appear here</span></div></div><div class="control-bar"><button class="btn btn-success" id="resumeCamera" type="button" disabled><i class="fa-solid fa-play"></i> Resume</button><button class="btn btn-warning" id="pauseCamera" type="button" disabled><i class="fa-solid fa-pause"></i> Pause</button><button class="btn btn-danger" id="stopCamera" type="button" disabled><i class="fa-solid fa-stop"></i> Stop</button><button class="btn btn-outline-secondary" id="snapshotCamera" type="button" disabled><i class="fa-solid fa-camera"></i> Screenshot</button><button class="btn btn-outline-secondary" id="fullscreenCamera" type="button"><i class="fa-solid fa-expand"></i> Full screen</button></div></article>
+        <aside class="live-side"><article class="panel alert-panel"><div class="panel-heading"><div><h3>Recent alerts</h3><p>Capacity and zone notifications</p></div></div><div id="alertList" class="activity-list empty-state">No alerts triggered.</div></article><article class="panel"><div class="panel-heading"><div><h3>Zone occupancy</h3><p>Configured restricted areas</p></div></div><div id="zoneList" class="zone-list empty-state">No restricted zones configured.</div></article></aside>
+      </div>
+
+    <div class="monitoring-bottom"><article class="panel chart-panel"><div class="panel-heading"><div><h3>Live occupancy cadence</h3><p>In-memory samples for the selected camera.</p></div></div><canvas id="liveOccupancyChart"></canvas></article><article class="panel"><div class="panel-heading"><div><h3>Safety Geometry</h3><p>Set zones and a direction line using video pixel coordinates.</p></div><button id="openGeometryEditor" class="btn btn-primary" type="button"><i class="fa-solid fa-pen-ruler"></i> Configure Geometry</button></div><div class="geometry-controls"><label for="zonesInput">Restricted zones (JSON array)</label><textarea id="zonesInput" class="form-control" rows="4" spellcheck="false" placeholder='[{"name":"Restricted","points":[[80,80],[320,80],[320,260],[80,260]],"alert_threshold":3}]'></textarea><button class="btn btn-outline-primary" id="saveZones" type="button">Save zones</button><label for="lineInput">Counting line (JSON)</label><input id="lineInput" class="form-control" spellcheck="false" placeholder='{"start":[100,300],"end":[500,300]}'><button class="btn btn-outline-primary" id="saveLine" type="button">Save line</button></div></article></div>
+    </section>
+    <section class="page" id="analyticsPage">
+      <div class="section-intro"><div><span class="tag">HISTORICAL INTELLIGENCE</span><h2>Occupancy analytics</h2><p>Explore durable, sampled history with hover detail, wheel zoom, and drag pan.</p></div><span class="secure-label"><i class="fa-solid fa-database"></i> 7-day retention</span></div>
+      <article class="panel analytics-toolbar"><div class="range-tabs" id="analyticsRanges"><button class="range-button" data-range="5m" type="button">5m</button><button class="range-button" data-range="15m" type="button">15m</button><button class="range-button" data-range="30m" type="button">30m</button><button class="range-button active" data-range="1h" type="button">1h</button><button class="range-button" data-range="6h" type="button">6h</button><button class="range-button" data-range="12h" type="button">12h</button><button class="range-button" data-range="24h" type="button">24h</button><button class="range-button" data-range="7d" type="button">7d</button><button class="range-button" data-range="custom" type="button">Custom</button></div><div class="analytics-controls"><select id="analyticsCamera" class="form-select"><option value="">All cameras</option></select><div id="customRangeInputs" class="custom-range d-none"><input id="analyticsStart" class="form-control" type="datetime-local"><input id="analyticsEnd" class="form-control" type="datetime-local"><button id="applyCustomRange" class="btn btn-outline-secondary" type="button">Apply</button></div><button id="resetAnalyticsZoom" class="btn btn-outline-secondary" type="button"><i class="fa-solid fa-magnifying-glass-minus"></i> Reset zoom</button></div></article>
+      <div class="analytics-grid"><article class="panel analytics-chart-panel"><div class="panel-heading"><div><h3>Occupancy over time</h3><p id="analyticsRangeLabel">Last 1 hour</p></div><div class="chart-legend"><span><i></i> Occupancy</span><span><i></i> Tracking count</span></div></div><div class="analytics-canvas"><canvas id="historyChart"></canvas><div id="historyEmpty" class="chart-empty d-none"><i class="fa-solid fa-chart-area"></i><b>No historical samples in this window</b><span>Start monitoring to build durable analytics.</span></div></div></article><article class="panel analytics-summary"><h3>Selected window</h3><div id="analyticsSummary" class="summary-stack"></div><div class="export-stack"><p>Export the plotted history</p><div><button id="exportAnalyticsCsv" class="btn btn-outline-secondary" type="button"><i class="fa-solid fa-file-csv"></i> CSV</button><button id="exportAnalyticsJson" class="btn btn-outline-secondary" type="button"><i class="fa-solid fa-code"></i> JSON</button><button class="btn btn-primary" data-go="reports" type="button"><i class="fa-solid fa-file-pdf"></i> PDF report</button></div></div></article></div>
+    </section>
+
+    <section class="page" id="reportsPage"><div class="section-intro"><div><span class="tag">EVIDENCE EXPORT</span><h2>Operational reports</h2><p>Create an evidence package containing metrics, tracking events, incidents, screenshots, and an occupancy trend chart.</p></div></div><article class="panel report-builder"><div><h3>Generate a report</h3><p>Files are generated server-side and stored under exports.</p></div><div class="report-form"><select id="reportFormat" class="form-select"><option value="pdf">PDF report</option><option value="csv">CSV data export</option><option value="json">JSON evidence export</option><option value="txt">Text summary</option></select><select id="reportCamera" class="form-select"><option value="">All cameras</option></select><button class="btn btn-primary" id="generateReport" type="button"><i class="fa-solid fa-file-arrow-down"></i> Generate</button></div></article><article class="panel"><div class="panel-heading"><div><h3>Generated reports</h3><p>Download previous exports without rerunning a report.</p></div><button class="text-button" id="refreshReports" type="button">Refresh</button></div><div class="table-responsive"><table class="app-table"><thead><tr><th>Created</th><th>Format</th><th>Scope summary</th><th></th></tr></thead><tbody id="reportTable"><tr><td colspan="4" class="empty-state">No reports generated.</td></tr></tbody></table></div></article></section>
+
+    <section class="page" id="logsPage"><div class="section-intro"><div><span class="tag">AUDIT TRAIL</span><h2>Event logs</h2><p>Camera lifecycle, tracking events, alerts, incidents, and screenshots are recorded with UTC timestamps.</p></div><div class="inline-actions"><select id="logFilter" class="form-select"><option value="">All categories</option><option value="alert">Alerts</option><option value="camera">Camera</option><option value="tracking">Tracking</option><option value="screenshot">Screenshots</option><option value="error">Errors</option></select><button class="btn btn-outline-secondary" id="refreshLogs" type="button"><i class="fa-solid fa-rotate"></i> Refresh</button></div></div><article class="panel"><div class="table-responsive"><table class="app-table"><thead><tr><th>Time</th><th>Category</th><th>Level</th><th>Camera</th><th>Event</th><th>Evidence</th></tr></thead><tbody id="logTable"><tr><td colspan="6" class="empty-state">No logged events.</td></tr></tbody></table></div></article></section>
+
+    <section class="page" id="settingsPage"><div class="section-intro"><div><span class="tag">CONTROL PLANE</span><h2>System settings</h2><p>Settings are cached and applied safely to every active and future camera pipeline.</p></div></div><form id="settingsForm" class="settings-grid"><article class="panel"><h3>AI detection</h3><div class="form-stack"><label for="confidenceThreshold">Detection confidence <output id="confidenceOutput">45%</output></label><input type="range" id="confidenceThreshold" min="0.05" max="0.95" step="0.05" value="0.45"><small>Higher confidence reduces false positives; lower confidence detects more candidates.</small><label for="targetInferenceFps">Target inference rate</label><input id="targetInferenceFps" class="form-control" type="number" min="1" max="60" value="12"><small>Caps inference work per camera to preserve host resources.</small><label for="crowdThreshold">Crowd alert threshold</label><input id="crowdThreshold" class="form-control" type="number" min="1" max="10000" value="20"><label for="alertCooldown">Alert cooldown (seconds)</label><input id="alertCooldown" class="form-control" type="number" min="1" max="3600" value="20"></div></article><article class="panel"><h3>Display and evidence</h3><div class="form-stack"><label for="themeSetting">Interface theme</label><select id="themeSetting" class="form-select"><option value="dark">Dark</option><option value="light">Light</option></select><label for="heatmapOpacity">Heatmap opacity <output id="heatmapOutput">45%</output></label><input type="range" id="heatmapOpacity" min="0.05" max="0.9" step="0.05" value="0.45"><label class="check-row"><input id="saveScreenshots" type="checkbox" checked><span>Save automatic alert screenshots</span></label><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Save settings</button></div></article></form></section>
+
+
+    <section class="page" id="aboutPage">
+        <div class="page-header">
+                <div>
+                    <h1>WELCOME</h1>
+                    <p class="text-muted">Smart Crowd Monitoring &amp; Safety System</p>
+                </div>
+            </div>
+
+            <div class="glass-card mb-4">
+                <h5>Overview</h5>
+                <p>
+                    The Smart Crowd Monitoring &amp; Safety System is an AI-powered platform that uses
+                    computer vision to detect and track people in real time, providing live occupancy
+                    analytics, configurable safety alerts, restricted-zone monitoring, entry/exit counting,
+                    and detailed historical reporting through a modern web dashboard.
+                </p>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="glass-card h-100">
+                        <h5><i class="fa-solid fa-microchip text-accent"></i> Technology Stack</h5>
+                        <ul class="about-tech-list">
+                            <li><i class="fa-brands fa-python"></i> Python &amp; Flask</li>
+                            <li><i class="fa-solid fa-eye"></i> OpenCV</li>
+                            <li><i class="fa-solid fa-robot"></i> Ultralytics YOLOv8</li>
+                            <li><i class="fa-solid fa-route"></i> ByteTrack (Supervision)</li>
+                            <li><i class="fa-brands fa-html5"></i> HTML5, CSS3, JavaScript</li>
+                            <li><i class="fa-brands fa-bootstrap"></i> Bootstrap 5</li>
+                            <li><i class="fa-solid fa-chart-line"></i> Chart.js</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="glass-card h-100">
+                        <h5><i class="fa-solid fa-list-check text-accent"></i> Core Capabilities</h5>
+                        <ul class="tech-list">
+                            <li><i class="fa-solid fa-check text-success"></i> Real-time person detection &amp; tracking</li>
+                            <li><i class="fa-solid fa-check text-success"></i> Live occupancy &amp; historical analytics</li>
+                            <li><i class="fa-solid fa-check text-success"></i> Configurable crowd threshold alerts</li>
+                            <li><i class="fa-solid fa-check text-success"></i> Restricted zone &amp; line-crossing counting</li>
+                            <li><i class="fa-solid fa-check text-success"></i> Heatmap generation</li>
+                            <li><i class="fa-solid fa-check text-success"></i> CSV / JSON / TXT / PDF reporting</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h5><i class="fa-solid fa-shield-halved text-accent"></i> Responsible Use</h5>
+                <p class="mb-0">
+                    This system was built for academic, research, and demonstration purposes. Any real-world
+                    deployment must comply with local privacy, surveillance, and data-protection laws.
+                </p>
+            </div>
+
+
+
+</section>
+
+<section class="page" id="helpPage">
+
+    <div class="section-intro">
+        <div>
+            <p class="eyebrow">WELCOME!</p>
+            <h2></h2>
+            <p>
+                Learn how to use Smart Crowd Monitoring & Safety System effectively.
+                Find answers to common questions, troubleshooting steps, and quick
+                operational guides.
+            </p>
+        </div>
+
+        <span class="tag">
+            <i class="fa-solid fa-circle-question"></i>
+            Help & FAQ
+        </span>
+    </div>
+
+    <!-- Quick Help Cards -->
+
+    
+
+    <!-- FAQ -->
+
+    <div class="panel">
+
+        <div class="panel-heading">
+            <div>
+                <h3>Frequently Asked Questions</h3>
+                <p>Quick answers to common operational questions.</p>
+            </div>
+        </div>
+
+        <div class="accordion" id="helpAccordion">
+
+            <!-- Getting Started -->
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq1">
+
+                        Getting Started
+
+                    </button>
+
+                </h2>
+
+                <div id="faq1"
+                     class="accordion-collapse collapse show"
+                     data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        <ul>
+
+                            <li>Connect a webcam, CCTV/IP camera, or upload a video.</li>
+
+                            <li>Click <strong>Start Monitoring</strong>.</li>
+
+                            <li>The AI engine initializes automatically.</li>
+
+                            <li>Live occupancy and analytics begin immediately.</li>
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq6">
+
+                        Camera feed is not displaying!
+
+                    </button>
+
+                </h2>
+
+                <div id="faq6"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Ensure the selected camera is connected and not being used by another
+                        application. Refresh the camera list and restart monitoring if the
+                        issue persists.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq7">
+
+                        Why is no person being detected?
+
+                    </button>
+
+                </h2>
+
+                <div id="faq7"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Verify that people are clearly visible in the camera frame. Poor
+                        lighting, extreme viewing angles, or low-resolution video may reduce
+                        detection accuracy.
+
+                    </div>
+
+                </div>
+
+            </div>            
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq8">
+
+                        Why is the FPS very low?
+
+                    </button>
+
+                </h2>
+
+                <div id="faq8"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Low FPS may occur due to high-resolution video, multiple active
+                        camera streams, or limited system resources and also depends on <b>System Processor</b> performane. Reducing the video
+                        resolution can improve performance.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq9">
+
+                        Occupancy count appears incorrect!
+
+                    </button>
+
+                </h2>
+
+                <div id="faq9"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Temporary counting variations may occur when people overlap or move
+                        quickly. Ensure the camera has a clear view of the monitored area and
+                        adjust the confidence threshold if required.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq10">
+
+                        Restricted zone alerts are not generated!
+
+                    </button>
+
+                </h2>
+
+                <div id="faq10"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Verify that restricted zones are properly configured and saved. Alerts
+                        are generated only when a tracked person enters a defined restricted
+                        zone.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq11">
+
+                        Unable to connect to an IP camera!
+
+                    </button>
+
+                </h2>
+
+                <div id="faq11"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Check the camera URL, network connection, username, and password.
+                        Ensure the IP camera supports the configured streaming protocol.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq12">
+
+                        Video upload failed!
+
+                    </button>
+
+                </h2>
+
+                <div id="faq12"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Verify that the selected file is a supported video format and is not
+                        corrupted. Large video files may require additional processing time.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq13">
+
+                        Dashboard statistics are not updating!
+
+                    </button>
+
+                </h2>
+
+                <div id="faq13"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Confirm that monitoring is active and the backend service is running
+                        correctly. Refresh the dashboard or restart the monitoring session if
+                        updates stop unexpectedly.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq14">
+
+                        Backend connection failed!
+
+                    </button>
+
+                </h2>
+
+                <div id="faq14"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Ensure the Flask backend server is running successfully and accessible.
+                        Verify that the frontend is connected to the correct backend service
+                        before starting monitoring.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Person Detection -->
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq2">
+
+                        How does person detection work?
+
+                    </button>
+
+                </h2>
+
+                <div id="faq2"
+                     class="accordion-collapse collapse"
+                     data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        SmartCrowd uses the YOLOv8 object detection model to detect
+                        people in every video frame. ByteTrack maintains unique IDs
+                        for detected individuals, enabling occupancy counting,
+                        tracking, and crowd analysis.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Alerts -->
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq3">
+
+                        When are alerts generated?
+
+                    </button>
+
+                </h2>
+
+                <div id="faq3"
+                     class="accordion-collapse collapse"
+                     data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Alerts are generated whenever occupancy exceeds the configured
+                        threshold or when a restricted zone violation is detected.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Reports -->
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq4">
+
+                        How can I export reports?
+
+                    </button>
+
+                </h2>
+
+                <div id="faq4"
+                     class="accordion-collapse collapse"
+                     data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Open the Reports page, choose the desired format, and click
+                        <strong>Generate Report</strong>. Generated reports can be
+                        downloaded directly.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq15">
+
+                        What is Crowd Alert Threshold?
+
+                    </button>
+
+                </h2>
+
+                <div id="faq15"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Crowd Alert Threshold defines the maximum number of people allowed
+                        before the system generates a crowd alert.
+
+                        <br><br>
+
+                        <strong>Example:</strong>
+
+                        <ul>
+                            <li>Threshold = 20</li>
+                            <li>Current Occupancy = 18 → No alert</li>
+                            <li>Current Occupancy = 21 → Alert generated</li>
+                        </ul>
+
+                        Lower values trigger alerts earlier, while higher values allow
+                        larger crowds before an alert is raised.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq16">
+
+                        What is Target Inference Rate?
+
+                    </button>
+
+                </h2>
+
+                <div id="faq16"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Target Inference Rate specifies how many video frames are processed
+                        by the AI every second.
+
+                        <br><br>
+
+                        <strong>Higher values:</strong>
+
+                        <ul>
+                            <li>More accurate tracking</li>
+                            <li>Smoother monitoring</li>
+                            <li>Higher CPU/GPU usage</li>
+                        </ul>
+
+                        <strong>Lower values:</strong>
+
+                        <ul>
+                            <li>Lower resource consumption</li>
+                            <li>Reduced power usage</li>
+                            <li>Less responsive detection</li>
+                        </ul>
+
+                        A value between <strong>10–15 FPS</strong> is suitable for most
+                        monitoring applications.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq17">
+
+                        What is Alert Cooldown?
+
+                    </button>
+
+                </h2>
+
+                <div id="faq17"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Alert Cooldown specifies the minimum time between two consecutive
+                        alerts.
+
+                        <br><br>
+
+                        <strong>Example:</strong>
+
+                        <ul>
+                            <li>Cooldown = 20 seconds</li>
+                            <li>An alert occurs now.</li>
+                            <li>No additional alert will be generated for the next 20 seconds.</li>
+                        </ul>
+
+                        This prevents repeated notifications when the same crowd condition
+                        persists.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq18">
+
+                        What is Geometry Configuration?
+
+                    </button>
+
+                </h2>
+
+                <div id="faq18"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Geometry Configuration allows you to define monitoring regions and
+                        counting lines directly on the video frame.
+
+                        <br><br>
+
+                        Using the Geometry Editor you can:
+
+                        <ul>
+
+                            <li>Create Restricted Zones</li>
+
+                            <li>Draw a Counting Line</li>
+
+                            <li>Configure Zone Alert Thresholds</li>
+
+                            <li>Save the geometry for future monitoring sessions</li>
+
+                        </ul>
+
+                        All geometry is stored using the original video coordinates to
+                        ensure accurate detection regardless of screen size.
+
+                    </div>
+
+                </div>
+
+            </div>
+            
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq19">
+
+                        What is Restricted Zone Threshold?
+
+                    </button>
+
+                </h2>
+
+                <div id="faq19"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        Restricted Zone Threshold defines how many people are allowed inside
+                        a configured restricted zone before an alert is generated.
+
+                        <br><br>
+
+                        <strong>Example:</strong>
+
+                        <ul>
+
+                            <li>Threshold = 5</li>
+
+                            <li>People inside zone = 3 → Normal</li>
+
+                            <li>People inside zone = 6 → Restricted Zone Alert</li>
+
+                        </ul>
+
+                        Each restricted zone can have its own threshold, allowing different
+                        safety limits for different monitored areas.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+
+            <!-- Troubleshooting -->
+
+            <div class="accordion-item">
+
+                <h2 class="accordion-header">
+
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq5">
+
+                        Camera is not detected!
+
+                    </button>
+
+                </h2>
+
+                <div id="faq5"
+                     class="accordion-collapse collapse"
+                     data-bs-parent="#helpAccordion">
+
+                    <div class="accordion-body">
+
+                        <ul>
+
+                            <li>Verify the camera is connected properly.</li>
+
+                            <li>Ensure no other application is using the camera.</li>
+
+                            <li>Restart the monitoring service.</li>
+
+                            <li>Refresh the camera list and try again.</li>
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            
+            
+
+        </div>
+
+    </div>
+
+</section>
+
+<div class="modal fade" id="geometryModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title"><i class="fa-solid fa-pen-ruler"></i> <b>Geometry Editor</b></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="geometry-toolbar"><div class="geometry-threshold"><label for="zoneThresholdInput"><i class="fa-solid fa-users"></i> <b>Threshold</b></label><input type="number" id="zoneThresholdInput" class="form-control" min="1" value="10"></div><button class="btn btn-primary" id="drawZoneBtn" type="button"><i class="fa-solid fa-draw-polygon"></i> Draw Zone</button><button class="btn btn-outline-primary" id="drawLineBtn" type="button"><i class="fa-solid fa-slash"></i> Draw Line</button><button class="btn btn-outline-secondary" id="undoGeometryBtn" type="button"><i class="fa-solid fa-rotate-left"></i> Undo</button><button class="btn btn-outline-danger" id="clearGeometryBtn" type="button"><i class="fa-solid fa-trash"></i> Clear</button></div><div class="geometry-workspace"><canvas id="geometryCanvas" width="960" height="540"></canvas></div><div class="geometry-status"><span id="geometryMode">Mode : None</span><span id="geometryPoints">Points : 0</span></div></div><div class="modal-footer"><button class="btn btn-success" id="saveGeometryBtn" type="button"><i class="fa-solid fa-floppy-disk"></i> Save Geometry</button><button class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div></div></div></div>
+    
+<div class="modal fade"
+     id="cameraSourceModal"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    <i class="fa-solid fa-circle-info"></i>
+
+                    Camera Source Guide
+
+                </h5>
+
+                <button
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-4">
+
+                    <h5>🖥 Webcam</h5>
+
+                    <p>
+                        Uses your laptop's built-in camera.
+                        Best for testing and demonstrations.
+                    </p>
+
+                </div>
+
+                <div class="mb-4">
+
+                    <h5>📷 USB Camera</h5>
+
+                    <p>
+                        Uses an external USB webcam connected to your computer.
+                    </p>
+
+                </div>
+
+                <div class="mb-4">
+
+                    <h5>🌐 RTSP Stream</h5>
+
+                    <p>
+                        Connects directly to CCTV cameras and NVR systems.
+                    </p>
+
+<pre>
+rtsp://username:password@192.168.1.20:554/stream
+</pre>
+
+                </div>
+
+                <div class="mb-4">
+
+                    <h5>📡 IP / HTTP Camera</h5>
+
+                    <p>
+                        Connects using HTTP or MJPEG streams.
+                    </p>
+
+<pre>
+http://192.168.1.25/video
+</pre>
+
+                </div>
+
+                <div class="mb-4">
+
+                    <h5>🎥 Uploaded Video</h5>
+
+                    <p>
+                        Analyze an MP4, AVI, MOV or WebM video without using a live camera.
+                    </p>
+
+                </div>
+
+                <div class="alert alert-info">
+
+                    <i class="fa-solid fa-lightbulb"></i>
+
+                    <b>Tip</b>
+
+                    <br>
+
+                    Choose <b>Webcam</b> if you're using your laptop camera.
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+    <footer class="app-footer">SmartCrowd Safety Operations <span>•</span> Local-first AI monitoring and evidence management system</footer>
+  </main>
+</div>
+{% endblock %}
