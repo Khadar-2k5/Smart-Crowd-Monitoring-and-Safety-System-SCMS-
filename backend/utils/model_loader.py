@@ -38,6 +38,11 @@ def run_inference(frame, confidence: float):
             frame,
             classes=[0],
             conf=confidence,
+            imgsz=640,          # Downscale inference resolution
+            max_det=100,        # Maximum people to detect
+            augment=False,
+            half=False,
             verbose=False,
+            stream=False,
         )
 
