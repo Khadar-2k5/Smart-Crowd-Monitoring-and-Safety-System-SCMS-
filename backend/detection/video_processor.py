@@ -74,29 +74,11 @@ class VideoProcessor:
         capture_source: str | int = self.source
         if self.source_type in {"webcam", "usb"}:
             capture_source = int(self.source)
-        # Open webcam/video with the appropriate backend
-        if self.source_type == "video":
-            capture = cv2.VideoCapture(str(capture_source), cv2.CAP_FFMPEG)
-        else:
-            capture = cv2.VideoCapture(capture_source)
-
+        capture = cv2.VideoCapture(capture_source)
         if not capture.isOpened():
             capture.release()
             code = "camera_not_found" if self.source_type in {"webcam", "usb"} else "stream_unavailable"
-            raise RuntimeError(
-                f"Unable to open source: {capture_source} ({code})."
-            )
-
-        # ----- Render diagnostics -----
-        logger.info("=" * 60)
-        logger.info("Camera ID      : %s", self.camera_id)
-        logger.info("Source Type    : %s", self.source_type)
-        logger.info("Capture Source : %s", capture_source)
-        logger.info("Opened         : %s", capture.isOpened())
-        logger.info("Frame Count    : %s", capture.get(cv2.CAP_PROP_FRAME_COUNT))
-        logger.info("Width          : %s", capture.get(cv2.CAP_PROP_FRAME_WIDTH))
-        logger.info("Height         : %s", capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        logger.info("=" * 60)
+            raise RuntimeError(f"Camera could not be opened ({code}). It may be busy, disconnected, or unavailable.")
         capture.set(cv2.CAP_PROP_BUFFERSIZE, 2)
         capture.set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_FRAME_WIDTH)
         capture.set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_FRAME_HEIGHT)
@@ -118,49 +100,15 @@ class VideoProcessor:
                 if capture is None:
                     break
                 success, frame = capture.read()
-                # Retry reading the first frame (helps on slower cloud instances)
-                success = False
-                frame = None
-
-                for attempt in range(10):
-                    success, frame = capture.read()
-
-                    if success:
-                        break
-
-                    logger.warning(
-                        "Frame read failed (%d/10) for %s",
-                        attempt + 1,
-                        self.camera_id,
-                    )
-
-                    time.sleep(0.2)
-
                 if not success:
-                    logger.error("Unable to read any frame from source: %s", self.source)
-
                     if not self.running:
                         break
-
                     if self.source_type == "video":
-                        self.error_code = "video_read_failed"
-                        self.error = "Unable to decode the uploaded video."
-                        self.store.log_event(
-                            "camera",
-                            "ERROR",
-                            self.error,
-                            self.camera_id,
-                        )
+                        self.store.log_event("camera", "INFO", f"Video completed: {self.name}", self.camera_id)
                     else:
                         self.error_code = "stream_lost"
-                        self.error = "The camera stream was lost."
-                        self.store.log_event(
-                            "camera",
-                            "ERROR",
-                            self.error,
-                            self.camera_id,
-                        )
-
+                        self.error = "The camera stream was lost. Check the connection or whether another application is using it."
+                        self.store.log_event("camera", "ERROR", self.error, self.camera_id)
                     break
                 settings = self.settings_provider()
                 target_fps = max(1, int(settings["target_inference_fps"]))

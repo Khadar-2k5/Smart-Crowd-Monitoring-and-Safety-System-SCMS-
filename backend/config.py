@@ -44,8 +44,8 @@ class Config:
     MAX_CAMERAS = int(os.getenv("SCM_MAX_CAMERAS", "8"))
     ANALYTICS_SAMPLE_SECONDS = int(os.getenv("SCM_ANALYTICS_SAMPLE_SECONDS", "5"))
     ANALYTICS_RETENTION_DAYS = int(os.getenv("SCM_ANALYTICS_RETENTION_DAYS", "7"))
-    CAMERA_FRAME_WIDTH = int(os.getenv("SCM_CAMERA_FRAME_WIDTH", "640"))
-    CAMERA_FRAME_HEIGHT = int(os.getenv("SCM_CAMERA_FRAME_HEIGHT", "360"))
+    CAMERA_FRAME_WIDTH = int(os.getenv("SCM_CAMERA_FRAME_WIDTH", "1280"))
+    CAMERA_FRAME_HEIGHT = int(os.getenv("SCM_CAMERA_FRAME_HEIGHT", "720"))
     ALLOWED_VIDEO_EXTENSIONS = {"mp4", "avi", "mov", "mkv", "m4v", "webm"}
 
     @classmethod
