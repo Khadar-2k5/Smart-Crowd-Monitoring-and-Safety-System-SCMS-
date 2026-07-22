@@ -254,12 +254,18 @@
     async initializeDashboard() {
       try {
         await this.withBusy('Loading workspace...', 'Synchronizing settings and operational data.', async () => {
-          this.loadSettings(await this.api.request('/api/settings'));
-          await this.refreshCameras(true);
-          await this.loadLogs();
-          this.renderHealth(this.state.health);
+            this.loadSettings(await this.api.request('/api/settings'));
+
+            this.sourceUi();
+
+            await this.refreshCameras(true);
+
+            await this.loadLogs();
+
+            this.renderHealth(this.state.health);
         });
         this.showPage(document.body.dataset.initialPage || 'home', false);
+        this.sourceUi();
         this.bindFeed();
         await this.poll();
         this.startPolling();
@@ -362,13 +368,43 @@
 
     sourceUi() {
       const type = $('#sourceType').value;
+
+      const startButton = $('#startCamera');
+
+      if (!type) {
+
+          const cameraSource = $('#cameraSource');
+          const cameraName = $('#cameraName');
+
+          cameraSource.value = "";
+          cameraSource.placeholder = "Please select an input source";
+
+          $('#sourceHint').textContent =
+              "Choose an input source to continue.";
+
+          cameraSource.classList.remove('d-none');
+          $('#webcamDeviceSelect').classList.add('d-none');
+
+          cameraSource.disabled = true;
+          cameraName.disabled = true;
+
+          startButton.disabled = true;
+
+          return;
+
+      }
+
+      startButton.disabled = false;
+      $('#cameraSource').disabled = false;
+      $('#cameraName').disabled = false;
+
       const input = $('#cameraSource');
       const hints = {
         webcam: ['0', 'Local webcam index, usually 0.'],
         usb: ['0', 'USB camera index, usually 0 or 1.'],
         rtsp: ['rtsp://user:password@camera/stream', 'Use the complete RTSP stream URL.'],
         ip: ['http://camera/video', 'Use an HTTP or HTTPS camera stream.'],
-        video: ['', 'Upload a supported video, then its filename is selected automatically.'],
+        video: ['Upload a video to continue', 'Upload a supported video, then its filename is selected automatically.'],
       };
       input.placeholder = hints[type][0];
       const webcam = type === 'webcam' || type === 'usb'; input.classList.toggle('d-none', webcam); $('#webcamDeviceSelect').classList.toggle('d-none', !webcam); if (webcam) this.enumerateCameras();
@@ -377,7 +413,92 @@
       $('#uploadStrip').classList.toggle('d-none', type !== 'video');
     }
 
-    async enumerateCameras() { try { if (!navigator.mediaDevices?.enumerateDevices) return; if (this.state.cameraPermission !== 'granted') { const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false }); stream.getTracks().forEach(track => track.stop()); this.state.cameraPermission = 'granted'; } const devices = (await navigator.mediaDevices.enumerateDevices()).filter(device => device.kind === 'videoinput'); const select = $('#webcamDeviceSelect'); select.innerHTML = devices.length ? devices.map((device, index) => `<option value="${index}">${escapeHtml(device.label || `Camera ${index + 1}`)}</option>`).join('') : '<option value="">No cameras detected</option>'; if (devices.length) $('#cameraSource').value = select.value; } catch (error) { this.state.cameraPermission = 'denied'; $$(`#sourceType option[value="webcam"], #sourceType option[value="usb"]`).forEach(option => option.disabled = true); $('#sourceType').value = 'video'; this.sourceUi(); this.notify('Camera permission was denied. Webcam options were disabled; upload a video instead.', 'warning'); } }
+    async enumerateCameras() {
+
+        try {
+
+            if (!navigator.mediaDevices?.enumerateDevices)
+                return;
+
+            if (this.state.cameraPermission !== 'granted') {
+
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: false
+                });
+
+                stream.getTracks().forEach(track => track.stop());
+
+                this.state.cameraPermission = 'granted';
+
+            }
+
+            const devices = (await navigator.mediaDevices.enumerateDevices())
+                .filter(device => device.kind === 'videoinput');
+
+            const select = $('#webcamDeviceSelect');
+
+            select.innerHTML = devices.length
+                ? devices.map((device, index) => `
+                    <option value="${index}">
+                        ${escapeHtml(device.label || `Camera ${index + 1}`)}
+                    </option>
+                `).join('')
+                : '<option value="">No cameras detected</option>';
+
+            if (devices.length) {
+
+                $('#cameraSource').value = select.value;
+
+                // Camera available → hide warning banner
+                document
+                    .getElementById("cameraAccessBanner")
+                    ?.classList.add("d-none");
+
+            }
+
+        }
+
+        catch (error) {
+
+            this.state.cameraPermission = 'denied';
+
+            $$(`#sourceType option[value="webcam"], #sourceType option[value="usb"]`)
+                .forEach(option => option.disabled = true);
+
+            $('#sourceType').value = 'video';
+
+            this.sourceUi();
+
+            // Show popup
+            const warningModal = new bootstrap.Modal(
+                document.getElementById("cameraUnavailableModal")
+            );
+
+            warningModal.show();
+
+            // After clicking OK keep banner visible
+            document.getElementById("cameraUnavailableOk").onclick = () => {
+
+                const webcamDisabled =
+                    document.querySelector('#sourceType option[value="webcam"]').disabled;
+
+                const usbDisabled =
+                    document.querySelector('#sourceType option[value="usb"]').disabled;
+
+                if (webcamDisabled && usbDisabled) {
+
+                    document
+                        .getElementById("cameraAccessBanner")
+                        .classList.remove("d-none");
+
+                }
+
+            };
+
+        }
+
+    }
 
     async refreshCameras(selectPreferred = false) {
       const cameras = await this.api.request('/api/cameras');
@@ -428,56 +549,180 @@
     }
 
     async startCamera() {
-      const sourceType = $('#sourceType').value;
-      const source = (sourceType === 'webcam' || sourceType === 'usb') ? $('#webcamDeviceSelect').value : $('#cameraSource').value.trim();
-      if (['rtsp', 'ip', 'video'].includes(sourceType) && !source) {
-        this.notify(sourceType === 'video' ? 'Upload a video before starting analysis.' : 'Enter a camera stream URL.', 'warning');
-        return;
-      }
-      const stages = ['Initializing AI...', 'Loading Detection Engine...', 'Opening Camera...', 'Preparing Tracker...', 'Starting Video Stream...', 'Almost Ready...'];
-      let stage = 0;
-      const stageTimer = window.setInterval(() => {
-        stage = Math.min(stage + 1, stages.length - 1);
-        $('#operationTitle').textContent = stages[stage];
-      }, 500);
-      try {
-        const stats = await this.withBusy(stages[0], 'Preparing the local detection and tracking pipeline.', () => this.api.request('/api/cameras/start', {
-          method: 'POST',
-          body: JSON.stringify({ source_type: sourceType, source: source || 0, name: $('#cameraName').value.trim() }),
-        }));
-        $('#operationTitle').textContent = stages[4];
-        $('#operationDetail').textContent = 'Waiting for the first processed frame.';
-        $('#operationOverlay').classList.remove('d-none');
-        this.state.cameraId = stats.camera_id;
-        this.state.feedKey = '';
-        await this.refreshCameras(true);
-        this.showPage('monitoring');
-        await this.waitForFirstFrame();
-        $('#operationOverlay').classList.add('d-none');
-        this.notify('Monitoring started.', 'success');
-        this.poll();
-      } catch (error) {
-        if (this.state.cameraId && !$('#videoFeed').naturalWidth) {
-          try {
-            await this.api.request(`/api/monitoring/${encodeURIComponent(this.state.cameraId)}/stop`, { method: 'POST', body: '{}' });
-            await this.refreshCameras();
-          } catch (_) {}
+
+        const sourceType = $('#sourceType').value;
+        const startButton = $('#startCamera');
+
+        const source = (sourceType === 'webcam' || sourceType === 'usb')
+            ? $('#webcamDeviceSelect').value
+            : $('#cameraSource').value.trim();
+
+        if (['rtsp', 'ip', 'video'].includes(sourceType) && !source) {
+
+            this.notify(
+                sourceType === 'video'
+                    ? 'Upload a video before starting analysis.'
+                    : 'Enter a camera stream URL.',
+                'warning'
+            );
+
+            return;
+
         }
-        this.notify(error.message, 'danger');
-      } finally {
-        window.clearInterval(stageTimer);
-        $('#operationOverlay').classList.add('d-none');
-      }
+
+        startButton.disabled = true;
+        startButton.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Starting...';
+
+        $('#operationOverlay').classList.remove('d-none');
+
+        try {
+
+            // STEP 1
+            $('#operationTitle').textContent = {
+                webcam: 'Opening Integrated Webcam...',
+                usb: 'Connecting USB Camera...',
+                rtsp: 'Connecting RTSP Stream...',
+                ip: 'Connecting Network Camera...',
+                video: 'Loading Uploaded Video...'
+            }[sourceType] || 'Opening Camera...';
+
+            $('#operationDetail').textContent =
+                'Establishing connection with the selected source.';
+
+            const stats = await this.api.request('/api/cameras/start', {
+                method: 'POST',
+                body: JSON.stringify({
+                    source_type: sourceType,
+                    source: source || 0,
+                    name: $('#cameraName').value.trim()
+                })
+            });
+
+            // STEP 2
+            $('#operationTitle').textContent = 'Loading AI Detection...';
+
+            $('#operationDetail').textContent =
+                'Initializing YOLOv8 and ByteTrack.';
+
+            this.state.cameraId = stats.camera_id;
+            this.state.feedKey = '';
+
+            await this.refreshCameras(true);
+
+            this.showPage('monitoring');
+
+            // STEP 3
+            $('#operationTitle').textContent = 'Receiving Live Video...';
+
+            $('#operationDetail').textContent =
+                'Waiting for the first processed frame.';
+
+            await this.waitForFirstFrame();
+
+            // Fade overlay
+
+            requestAnimationFrame(() => {
+
+                $('#operationOverlay').classList.add('fade-out');
+
+            });
+
+            setTimeout(() => {
+
+                $('#operationOverlay').classList.add('d-none');
+                $('#operationOverlay').classList.remove('fade-out');
+
+            }, 300);
+
+            this.notify('Monitoring started.', 'success');
+
+            this.poll();
+
+        }
+        catch (error) {
+
+            if (this.state.cameraId && !$('#videoFeed').naturalWidth) {
+
+                try {
+
+                    await this.api.request(
+                        `/api/monitoring/${encodeURIComponent(this.state.cameraId)}/stop`,
+                        {
+                            method: 'POST',
+                            body: '{}'
+                        }
+                    );
+
+                    await this.refreshCameras();
+
+                } catch (_) {}
+
+            }
+
+            $('#operationOverlay').classList.add('d-none');
+
+            this.notify(error.message, 'danger');
+
+        }
+        finally {
+
+            startButton.disabled = false;
+
+            startButton.innerHTML =
+                '<i class="fa-solid fa-play"></i> Proceed';
+
+        }
+
     }
 
     waitForFirstFrame() {
-      const image = $('#videoFeed');
-      return new Promise((resolve, reject) => {
-        const timeout = window.setTimeout(() => reject(new Error('Camera opened, but no video frame was received. Check whether it is busy or disconnected.')), 15000);
-        image.onload = () => { window.clearTimeout(timeout); image.classList.add('visible'); $('#videoEmpty').style.display = 'none'; resolve(); };
-        image.onerror = () => { window.clearTimeout(timeout); reject(new Error('The video stream was lost. Check the camera connection and try again.')); };
-        this.bindFeed();
-      });
+
+        const image = $('#videoFeed');
+
+        return new Promise((resolve, reject) => {
+
+            this.bindFeed();
+
+            const started = Date.now();
+
+            const timer = setInterval(() => {
+
+                if (image.complete && image.naturalWidth > 0) {
+
+                    clearInterval(timer);
+
+                    $('#videoEmpty').style.display = 'none';
+
+                    // Start video fade
+                    requestAnimationFrame(() => {
+
+                        image.classList.add('visible');
+
+                    });
+
+                    resolve();
+
+                    return;
+
+                }
+
+                if (Date.now() - started > 15000) {
+
+                    clearInterval(timer);
+
+                    reject(
+                        new Error(
+                            'Camera opened, but no video frame was received. Check whether it is busy or disconnected.'
+                        )
+                    );
+
+                }
+
+            }, 100);
+
+        });
+
     }
 
     async cameraAction(action) {
@@ -491,7 +736,8 @@
           `/api/monitoring/${encodeURIComponent(this.state.cameraId)}/${action}`,
           { method: 'POST', body: '{}' },
         ));
-        if (action === 'stop') this.state.feedKey = '';
+        if (action === 'stop')
+            this.state.feedKey = '';
         await this.refreshCameras();
         this.bindFeed();
         this.poll();
@@ -511,12 +757,38 @@
         return;
       }
       const feedKey = `${selected.id}:${this.state.mode}`;
-      image.classList.remove('visible');
-      $('#videoEmpty').style.display = 'grid';
-      image.onerror = () => { this.notify('The video stream was lost. Check the camera connection and try again.', 'danger'); };
+      
+      image.onerror = () => {
+
+          image.classList.remove('visible');
+          $('#videoEmpty').style.display = 'grid';
+
+          this.notify(
+              'The video stream was lost. Check the camera connection and try again.',
+              'danger'
+          );
+
+      };
+
+      image.onload = () => {
+
+          $('#videoEmpty').style.display = 'none';
+
+          requestAnimationFrame(() => {
+
+              image.classList.add('visible');
+
+          });
+
+      };
+      
       if (feedKey !== this.state.feedKey) {
-        image.src = `/video_feed/${encodeURIComponent(selected.id)}?mode=${this.state.mode}&_=${Date.now()}`;
-        this.state.feedKey = feedKey;
+
+          image.src =
+              `/video_feed/${encodeURIComponent(selected.id)}?mode=${this.state.mode}&_=${Date.now()}`;
+
+          this.state.feedKey = feedKey;
+
       }
       if (image.complete && image.naturalWidth) {
         image.classList.add('visible');
@@ -987,7 +1259,26 @@
       $('#stopCamera').addEventListener('click', () => this.cameraAction('stop'));
       $('#snapshotCamera').addEventListener('click', () => this.takeSnapshot());
       $('#fullscreenCamera').addEventListener('click', () => $('#videoStage').requestFullscreen?.());
-      $$('.video-mode').forEach(button => button.addEventListener('click', () => { this.state.mode = button.dataset.mode; this.state.feedKey = ''; $$('.video-mode').forEach(item => item.classList.toggle('active', item === button)); this.bindFeed(); }));
+
+      $$('.video-mode').forEach(button => button.addEventListener('click', () => {
+
+          // Already in this mode -> do nothing
+          if (this.state.mode === button.dataset.mode)
+              return;
+
+          this.state.mode = button.dataset.mode;
+
+          this.state.feedKey = '';
+
+          $$('.video-mode').forEach(item =>
+              item.classList.toggle('active', item === button)
+          );
+
+          this.bindFeed();
+
+      }));
+
+
       $('#dismissAlert').addEventListener('click', () => $('#alertBanner').classList.add('d-none'));
       $('#saveZones').addEventListener('click', () => this.saveGeometry('zones'));
       $('#saveLine').addEventListener('click', () => this.saveGeometry('line'));

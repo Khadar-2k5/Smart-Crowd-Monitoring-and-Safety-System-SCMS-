@@ -56,12 +56,23 @@
       <article class="panel source-panel">
         <div class="panel-heading"><div><h3>Connect a camera source</h3><p>Start a live workspace; every source retains independent tracking state.</p></div><span class="secure-label"><i class="fa-solid fa-shield-halved"></i>Secure AI</span></div>
         <div class="source-config">
-          <div class="field"><label for="sourceType">Input type</label><select id="sourceType" class="form-select"><option value="webcam">Webcam</option><option value="usb">USB camera</option><option value="rtsp">RTSP stream</option><option value="ip">IP / HTTP camera</option><option value="video">Uploaded video</option></select></div>
+          <div class="field"><label for="sourceType">Input type</label><select id="sourceType" class="form-select"><option value="" selected>Select Camera Source</option><option value="webcam">Webcam</option><option value="usb">USB camera</option><option value="rtsp">RTSP stream</option><option value="ip">IP / HTTP camera</option><option value="video">Uploaded video</option></select></div>
           <div class="field grow"><label for="cameraSource" class="d-flex align-items-center justify-content-between"><span>Camera Source</span><button id="cameraSourceHelp" class="btn btn-sm btn-outline-info rounded-circle" type="button" title="Camera Source Guide"><i class="fa-solid fa-circle-info"></i></button></label>
     <select id="webcamDeviceSelect" class="form-select d-none" aria-describedby="sourceHint"><option value="">Detecting cameras...</option></select><input id="cameraSource" class="form-control" value="0" placeholder="0, rtsp://... or uploaded filename"><small id="sourceHint">Local webcam index, usually 0.</small></div>
           <div class="field"><label for="cameraName">Display name</label><input id="cameraName" class="form-control" maxlength="80" placeholder="Optional name"></div>
           <div class="field action-field"><label>&nbsp;</label><button class="btn btn-primary" id="startCamera" type="button"><i class="fa-solid fa-play"></i> Proceed</button></div>
         </div>
+
+        <div id="cameraAccessBanner" class="d-none mt-3">
+
+            <i class="fa-solid fa-triangle-exclamation"></i>
+
+            <span>
+                Webcam and USB camera access couldn't be initialized. You can still continue using RTSP Stream, IP / HTTP Camera, or Upload Video features.
+            </span>
+
+        </div>
+
         <div class="upload-strip d-none" id="uploadStrip"><input type="file" id="videoUpload" accept="video/mp4,video/x-msvideo,video/quicktime,video/x-matroska,video/webm" hidden><button class="btn btn-outline-secondary" id="uploadVideo" type="button"><i class="fa-solid fa-upload"></i> Upload video</button><span id="uploadStatus">No video selected</span></div>
       </article>
 
@@ -1003,6 +1014,90 @@ http://192.168.1.25/video
                     Choose <b>Webcam</b> if you're using your laptop camera.
 
                 </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Camera Access Warning Modal -->
+
+<div class="modal fade"
+     id="cameraUnavailableModal"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    <i class="fa-solid fa-camera-slash text-warning"></i>
+                    Camera Access Unavailable
+                </h5>
+
+            </div>
+
+            <div class="modal-body">
+
+                <p>
+                    Webcam and USB camera access couldn't be established.
+                </p>
+
+                <p class="mb-2">
+                    This may happen because:
+                </p>
+
+                <ul>
+
+                    <li>Camera permission was denied.</li>
+
+                    <li>No camera is connected.</li>
+
+                    <li>Another application is using the camera.</li>
+
+                </ul>
+
+                <div class="alert alert-info mt-3">
+
+                    <strong>You can still continue using:</strong>
+
+                    <ul class="mb-0 mt-2">
+
+                        <li>RTSP Stream</li>
+
+                        <li>IP / HTTP Camera</li>
+
+                        <li>Uploaded Video</li>
+
+                    </ul>
+
+                </div>
+
+                <p class="mt-3 mb-0">
+
+                    Enable camera access and refresh the page to try again.
+
+                </p>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    id="cameraUnavailableOk"
+                    class="btn btn-primary"
+                    data-bs-dismiss="modal">
+
+                    OK
+
+                </button>
 
             </div>
 
